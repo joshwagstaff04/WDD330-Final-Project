@@ -1,4 +1,4 @@
-/* Basic CSS reset */
+/* Basic CSS, I plan on updating as i go through */
 * {
     margin: 0;
     padding: 0;
@@ -6,7 +6,7 @@
 }
 
 :root {
-    /* Color scheme - keeping it simple for now */
+    /* Color scheme  */
     --primary-green: #4a9d5f;
     --primary-green-dark: #3a7d4f;
     --background-light: #f5f5f5;
@@ -97,19 +97,8 @@ main {
     display: block;
 }
 
-/* ===========================
-   Hero Section15px;
-}
 
-.view {
-    display: none;
-}
-
-.view.active {
-    display: block;
-}
-
-/* Hero section - TODO: style this better */
+/* Hero section */
 .hero {
     text-align: center;
     padding: 40px 20px;
@@ -217,35 +206,6 @@ select:focus {
     font-size: 0.9rem;
 }
 
-/* Buttonsckground-white);
-    color: var(--text-dark);
-    border: 2px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-    border-color: var(--primary-green);
-    color: var(--primary-green);
-}
-
-.btn-accent {
-    background-color: var(--accent-orange);
-    color: white;
-}
-
-.btn-accent:hover {
-    background-color: var(--accent-orange-dark);
-}
-
-/* ===========================
-   Recipe Grid & Cards
-   =========================== */
-.recipe-grid 10px 20px;
-    border: none;
-    font-size: 1rem;
-    cursor: pointer;
-    background-color: var(--primary-green);
-    color: white;
-}
 
 .btn:hover {
     background-color: var(--primary-green-dark);
@@ -261,22 +221,7 @@ select:focus {
     border-color: var(--primary-green);
 }
 
-/* Recipe cards
-.recipe-card-actions {
-    display: flex;
-    gap: var(--spacing-sm);
-    margin-top: var(--spacing-sm);
-}
 
-.recipe-card-actions .btn {
-    font-size: 0.9rem;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    flex: 1;
-}
-
-/* ===========================
-   Recipe Detail
-   =========================== */
 .recipe-detail {
     background-color: var(--background-white);
     border-radius: var(--radius-md);
@@ -357,66 +302,9 @@ title {
     color: var(--primary-green);
 }
 
-/* ======20px;
-    margin-bottom: 15px;
-    color: var(--text-medium);
-}
 
-.recipe-detail-actions {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
 
-.recipe-ingredients,
-.recipe-instructions,
-.recipe-nutrition {
-    margin-bottom: 30px
-.planner-day-header {
-    font-weight: 600;
-    color: var(--primary-green);
-    text-align: center;
-    padding-bottom: var(--spacing-xs);
-    border-bottom: 2px solid var(--primary-green);
-    margin-bottom: var(--spacing-sm);
-}8px 0;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.instructions-list {
-    list-style: decimal;
-    padding-left: 30px;
-}
-
-.instructions-list li {
-    margin-bottom: 15px
-}
-
-.planner-meal-slot:hover {
-    border-color: var(--primary-green);
-    background-color: rgba(74, 157, 95, 0.05);
-}15px;
-}
-
-.nutrition-item {
-    background-color: var(--background-light);
-    padding: 10px;
-    text-align: center;
-    border: 1px solid var(--border-color);
-}
-
-.nutrition-label {
-    font-size: 0.9rem;
-    color: var(--text-medium);
-}
-
-.nutrition-value {
-    font-size: 1.3rem;
-    font-weight: bold;
-    color: var(--primary-green);
-}
-
-/* Meal planner - basic grid for now */
+/* Meal planner  basic grid*/
 .planner-actions {
     display: flex;
     gap: 10px;
@@ -524,7 +412,7 @@ title {
     font-size: 1.2rem;
 }
 
-/* Product cards - TODO: style these better */
+/* Product cards  */
 .product-card {
     background-color: var(--background-white);
     border: 1px solid var(--border-color);
@@ -532,7 +420,7 @@ title {
     margin-bottom: 10px;
     display: flex;
     gap: 15px
-   =========================== */
+    */
 .hidden {
     display: none !important;
 }80px;
@@ -561,8 +449,7 @@ title {
     margin-top: 10px;
 }
 
-/* Footer
-   =========================== */
+/* Footer */
 @media (max-width: 768px) {
     .header-container {
         flex-30px 0;
