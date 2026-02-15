@@ -121,8 +121,8 @@ function isRecipeSaved(recipeId) {
   return saved.some(r => r.id === recipeId);
 }
 
-// TODO: meal plan stuff goes here
-// TODO: grocery list stuff
+// TODO: meal plan functions go here
+// TODO: grocery list
 
 export { 
   searchRecipes, 
