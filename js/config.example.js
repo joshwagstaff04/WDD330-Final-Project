@@ -19,7 +19,7 @@ const config = {
     // No API key needed just need to set a custom User-Agent
     openFoodFacts: {
         baseUrl: 'https://world.openfoodfacts.org',
-        userAgent: 'MealPlanner-WDD330/1.0 (your-email@example.com)'
+        userAgent: 'MealPlanner-WDD330/1.0 (joshuawagstaff04@gmail.com)'
     }
 };
 
