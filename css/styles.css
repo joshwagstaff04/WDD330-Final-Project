@@ -1,0 +1,615 @@
+/* Basic CSS reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Color scheme - keeping it simple for now */
+    --primary-green: #4a9d5f;
+    --primary-green-dark: #3a7d4f;
+    --background-light: #f5f5f5;
+    --background-white: #ffffff;
+    --text-dark: #333333;
+    --text-medium: #666666;
+    --text-light: #999999;
+    --border-color: #ddd;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--text-dark);
+    background-color: var(--background-light);
+}
+
+/* Header and nav */
+header {
+    background-color: var(--background-white);
+    box-shadow: 0 2px 4px var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+rder-bottom: 1px solid var(--border-color);
+    padding: 1rem;
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center
+    gap: var(--spacing-sm);
+}
+
+.logo-img {
+    width: 40px;
+    height: 40px;
+}
+
+.site-title {
+    font-size: 1.5rem;
+    color10px;
+}
+
+.logo-img {
+    width: 40px;
+    height: 40px;
+}
+
+.site-title {
+    font-size: 1.5rem;
+    color: var(--primary-green);
+    font-weight: bold none;
+    color20px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--text-medium);
+    padding: 8px 12px;
+}
+
+.nav-link:hover {
+    color: var(--primary-green);
+}
+
+.nav-link.active {
+    color: var(--primary-green);
+    font-weight: bold;
+}
+
+/* Main content */
+main {
+    padding: 20px
+    padding: 0 var(--spacing-md);
+}
+
+.view {
+    display: none;
+}
+
+.view.active {
+    display: block;
+}
+
+/* ===========================
+   Hero Section15px;
+}
+
+.view {
+    display: none;
+}
+
+.view.active {
+    display: block;
+}
+
+/* Hero section - TODO: style this better */
+.hero {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: var(--primary-green);
+    color: white;
+    margin-bottom: 30px;
+}
+
+.hero h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+}
+
+.search-section,
+.featured-section {
+    margin-bottom: 40px
+
+section h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    border-bottom: 3px solid var(--primary-green);
+    padding-bottom: var(--spacing-xs);
+    display: inline-block;
+h1 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--primary-green);
+    padding-bottom: 5px;
+    display: inline-block;
+}
+
+/* Forms */
+.search-form {
+    background-color: var(--background-white);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 20pxolor);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-family: var(--font-family);
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary-green);
+}
+
+.search-f10px;
+    margin-bottom: 15px;
+}
+
+.search-input-group input {
+    flex: 1;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    font-size: 1rem;
+    width: 100%;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary-green);
+}
+
+.search-filters {
+    margin-top: 15px;
+}
+
+.search-filters summary {
+    cursor: pointer;
+    color: var(--primary-green);
+    margin-bottom: 10px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Buttonsckground-white);
+    color: var(--text-dark);
+    border: 2px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-green);
+    color: var(--primary-green);
+}
+
+.btn-accent {
+    background-color: var(--accent-orange);
+    color: white;
+}
+
+.btn-accent:hover {
+    background-color: var(--accent-orange-dark);
+}
+
+/* ===========================
+   Recipe Grid & Cards
+   =========================== */
+.recipe-grid 10px 20px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: var(--primary-green);
+    color: white;
+}
+
+.btn:hover {
+    background-color: var(--primary-green-dark);
+}
+
+.btn-secondary {
+    background-color: white;
+    color: var(--text-dark);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    border-color: var(--primary-green);
+}
+
+/* Recipe cards
+.recipe-card-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+}
+
+.recipe-card-actions .btn {
+    font-size: 0.9rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    flex: 1;
+}
+
+/* ===========================
+   Recipe Detail
+   =========================== */
+.recipe-detail {
+    background-color: var(--background-white);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+.recipe-detail-header {
+    margin-bottom: var(--spacing-lg);
+}
+
+.recipe-d20px;
+    margin-top: 20px;
+}
+
+.recipe-card {
+    background-color: var(--background-white);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+}
+
+.recipe-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-md);
+}
+
+.meta-item {
+    display: flex;
+    align-ite15px;
+}
+
+.recipe-card-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.recipe-card-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 0.9rem;
+    color: var(--text-medium);
+    margin-bottom: 10px;
+}
+
+.recipe-card-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.recipe-card-actions .btn {
+    font-size: 0.85rem;
+    padding: 8px 12px
+.instructions-list {
+    list-style: decimal;
+    padding-left: var(--spacing-lg);
+}
+Recipe detail page - TODO: style better later */
+.recipe-detail {
+    background-color: var(--background-white);
+    padding: 20px;
+    border: 1px solid var(--border-color-fit, minmax(150px, 1fr));
+    gap: var(--spacing-md);
+}
+title {
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+}
+
+.recipe-detail-image {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    margin-bottom: 20px
+    font-weight: 700;
+    color: var(--primary-green);
+}
+
+/* ======20px;
+    margin-bottom: 15px;
+    color: var(--text-medium);
+}
+
+.recipe-detail-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.recipe-ingredients,
+.recipe-instructions,
+.recipe-nutrition {
+    margin-bottom: 30px
+.planner-day-header {
+    font-weight: 600;
+    color: var(--primary-green);
+    text-align: center;
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 2px solid var(--primary-green);
+    margin-bottom: var(--spacing-sm);
+}8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.instructions-list {
+    list-style: decimal;
+    padding-left: 30px;
+}
+
+.instructions-list li {
+    margin-bottom: 15px
+}
+
+.planner-meal-slot:hover {
+    border-color: var(--primary-green);
+    background-color: rgba(74, 157, 95, 0.05);
+}15px;
+}
+
+.nutrition-item {
+    background-color: var(--background-light);
+    padding: 10px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.nutrition-label {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+}
+
+.nutrition-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--primary-green);
+}
+
+/* Meal planner - basic grid for now */
+.planner-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px
+    padding: var(--spacing-md);
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+.grocery-aisle-group {
+    margi10px;
+}
+
+.planner-day {
+    background-color: var(--background-white);
+    padding: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.planner-day-header {
+    font-weight: bold;
+    color: var(--primary-green);
+    text-align: center;
+    padding-bottom: 5px;
+    border-bottom: 2px solid var(--primary-green);
+    margin-bottom: 10px;
+}
+
+.planner-meal-slot {
+    background-color: var(--background-light);
+    border: 2px dashed var(--border-color);
+    padding: 10px;
+    margin-bottom: 8px;
+    min-height: 80px;
+    cursor: pointer;
+}
+
+.planner-meal-slot:hover {
+    border-color: var(--primary-green);
+}
+
+.planner-meal-slot.filled {
+    background-color: white;
+    border-style: solid;
+}
+
+.meal-label {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--text-medium);
+    text-transform: uppercase
+
+.grocery-item-remove:hover {
+   Grocery list - basic for now */
+.grocery-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.grocery-list {
+    background-color: var(--background-white);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.grocery-aisle-group {
+    margin-bottom: 25px;
+}
+
+.grocery-aisle-header {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--primary-green);
+    margin-bottom: 10px;
+    padding-bottom: 5px
+
+.product-name {
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+}
+
+.product-10px;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.grocery-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+.grocery-item-name {
+    flex: 1;
+}
+
+.grocery-item.checked .grocery-item-name {
+    text-decoration: line-through;
+    color: var(--text-light);
+}
+
+.grocery-item-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+/* Product cards - TODO: style these better */
+.product-card {
+    background-color: var(--background-white);
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 15px
+   =========================== */
+.hidden {
+    display: none !important;
+}80px;
+    height: 80px;
+    object-fit: contain;
+}
+
+.product-info {
+    flex: 1;
+}
+
+.product-name {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.product-brand {
+    color: var(--text-medium);
+    font-size: 0.9rem;
+}
+
+.product-nutrition-summary {
+    display: flex;
+    gap: 15px;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+/* Footer
+   =========================== */
+@media (max-width: 768px) {
+    .header-container {
+        flex-30px 0;
+    margin-top: 40px;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.attribution {
+    font-size: 0.85rem;
+    margin-top: 10px;
+}
+
+.attribution a {
+    color: var(--primary-green);
+    text-decoration: none;
+}
+
+/* Utility stuff
+ loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-medium);
+}
+
+.error {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-left: 4px solid #c62828;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-medium);
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+/* Basic responsive - TODO: improve mobile layout

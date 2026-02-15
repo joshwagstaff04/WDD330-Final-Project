@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Meal Planner & Grocery Helper - Plan your meals, organize your grocery shopping, and discover delicious recipes">
+    <meta name="author" content="WDD330 Student">
+    <title>Meal Planner & Grocery Helper</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <img src="images/logo.svg" alt="Meal Planner Logo" class="logo-img">
+                <h1 class="site-title">Meal Planner</h1>
+            </div>
+            <nav aria-label="Main navigation">
+                <ul class="nav-list">
+                    <li><a href="#/" class="nav-link active" data-page="home">Home</a></li>
+                    <li><a href="#/planner" class="nav-link" data-page="planner">Meal Planner</a></li>
+                    <li><a href="#/grocery" class="nav-link" data-page="grocery">Grocery List</a></li>
+                    <li><a href="#/saved" class="nav-link" data-page="saved">Saved Recipes</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="app">
+        <!-- Home View -->
+        <section id="home-view" class="view active">
+            <div class="container">
+                <div class="hero">
+                    <h1>Plan Meals. Save Time. Eat Better.</h1>
+                    <p class="hero-subtitle">Search recipes, plan your weekly meals, and generate smart grocery lists</p>
+                </div>
+
+                <div class="search-section">
+                    <h2>Find Recipes</h2>
+                    <form id="recipe-search-form" class="search-form">
+                        <div class="search-input-group">
+                            <input 
+                                type="text" 
+                                id="search-input" 
+                                name="query" 
+                                placeholder="Search by ingredient, recipe name, or cuisine..." 
+                                autocomplete="off"
+                                aria-label="Recipe search"
+                            >
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                        
+                        <details class="search-filters">
+                            <summary>Advanced Filters</summary>
+                            <div class="filter-grid">
+                                <div class="filter-group">
+                                    <label for="diet-select">Diet</label>
+                                    <select id="diet-select" name="diet">
+                                        <option value="">Any</option>
+                                        <option value="vegetarian">Vegetarian</option>
+                                        <option value="vegan">Vegan</option>
+                                        <option value="gluten free">Gluten Free</option>
+                                        <option value="ketogenic">Ketogenic</option>
+                                        <option value="paleo">Paleo</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="cuisine-select">Cuisine</label>
+                                    <select id="cuisine-select" name="cuisine">
+                                        <option value="">Any</option>
+                                        <option value="italian">Italian</option>
+                                        <option value="mexican">Mexican</option>
+                                        <option value="asian">Asian</option>
+                                        <option value="american">American</option>
+                                        <option value="mediterranean">Mediterranean</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="max-time">Max Cook Time (min)</label>
+                                    <input type="number" id="max-time" name="maxReadyTime" placeholder="e.g., 30">
+                                </div>
+                            </div>
+                        </details>
+                    </form>
+                    <div id="search-results" class="recipe-grid"></div>
+                </div>
+
+                <div class="featured-section">
+                    <h2>Featured Recipes</h2>
+                    <div id="featured-recipes" class="recipe-grid"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recipe Detail View -->
+        <section id="recipe-view" class="view">
+            <div class="container">
+                <button id="back-btn" class="btn btn-secondary">← Back</button>
+                <div id="recipe-detail-content"></div>
+            </div>
+        </section>
+
+        <!-- Meal Planner View -->
+        <section id="planner-view" class="view">
+            <div class="container">
+                <h1>Weekly Meal Planner</h1>
+                <div class="planner-actions">
+                    <button id="generate-grocery-btn" class="btn btn-primary">Generate Grocery List</button>
+                    <button id="clear-plan-btn" class="btn btn-secondary">Clear Plan</button>
+                </div>
+                <div id="meal-planner-grid" class="planner-grid"></div>
+            </div>
+        </section>
+
+        <!-- Grocery List View -->
+        <section id="grocery-view" class="view">
+            <div class="container">
+                <h1>Grocery List</h1>
+                <div class="grocery-actions">
+                    <button id="clear-grocery-btn" class="btn btn-secondary">Clear All</button>
+                    <button id="uncheck-all-btn" class="btn btn-secondary">Uncheck All</button>
+                </div>
+
+                <div class="grocery-add-section">
+                    <h2>Add Item</h2>
+                    <form id="add-grocery-form" class="add-item-form">
+                        <input type="text" id="grocery-item-input" placeholder="Item name" required>
+                        <input type="text" id="grocery-aisle-input" placeholder="Aisle (optional)">
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </form>
+                </div>
+
+                <div class="product-search-section">
+                    <h2>Look Up Product Nutrition</h2>
+                    <form id="product-search-form" class="search-form">
+                        <input 
+                            type="text" 
+                            id="product-search-input" 
+                            placeholder="Search for a product..."
+                            aria-label="Product search"
+                        >
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </form>
+                    <div id="product-results"></div>
+                </div>
+
+                <div id="grocery-list-content"></div>
+            </div>
+        </section>
+
+        <!-- Saved Recipes View -->
+        <section id="saved-view" class="view">
+            <div class="container">
+                <h1>Saved Recipes</h1>
+                <div id="saved-recipes-content" class="recipe-grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-container">
+            <p>&copy; 2026 Meal Planner & Grocery Helper</p>
+            <p class="attribution">
+                Recipe data powered by <a href="https://spoonacular.com/food-api" target="_blank" rel="noopener">Spoonacular API</a> | 
+                Product nutrition from <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener">Open Food Facts</a>
+            </p>
+        </div>
+    </footer>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
