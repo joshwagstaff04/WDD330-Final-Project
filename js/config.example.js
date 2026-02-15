@@ -6,7 +6,7 @@
  */
 
 const config = {
-    // Spoonacular API Configuration
+    // Spoonacular API 
     
     spoonacular: {
         apiKey: 'YOUR_SPOONACULAR_API_KEY_HERE',
