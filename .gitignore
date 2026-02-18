@@ -1,6 +1,9 @@
 # Config file with API keys
 js/config.js
 
+# Dev notes
+LOCAL_STORAGE_SCHEMA.md
+
 # macOS
 .DS_Store
 .AppleDouble

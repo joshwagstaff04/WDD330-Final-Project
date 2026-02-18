@@ -3,11 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Meal Planner & Grocery Helper - Plan your meals, organize your grocery shopping, and discover delicious recipes">
-    <meta name="author" content="WDD330 Student">
     <title>Meal Planner & Grocery Helper</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/animations.css">
 </head>
 <body>
     <header>
@@ -16,7 +13,7 @@
                 <img src="images/logo.svg" alt="Meal Planner Logo" class="logo-img">
                 <h1 class="site-title">Meal Planner</h1>
             </div>
-            <nav aria-label="Main navigation">
+            <nav>
                 <ul class="nav-list">
                     <li><a href="#/" class="nav-link active" data-page="home">Home</a></li>
                     <li><a href="#/planner" class="nav-link" data-page="planner">Meal Planner</a></li>
@@ -43,10 +40,8 @@
                             <input 
                                 type="text" 
                                 id="search-input" 
-                                name="query" 
                                 placeholder="Search by ingredient, recipe name, or cuisine..." 
                                 autocomplete="off"
-                                aria-label="Recipe search"
                             >
                             <button type="submit" class="btn btn-primary">Search</button>
                         </div>
@@ -56,7 +51,7 @@
                             <div class="filter-grid">
                                 <div class="filter-group">
                                     <label for="diet-select">Diet</label>
-                                    <select id="diet-select" name="diet">
+                                    <select id="diet-select">
                                         <option value="">Any</option>
                                         <option value="vegetarian">Vegetarian</option>
                                         <option value="vegan">Vegan</option>
@@ -67,7 +62,7 @@
                                 </div>
                                 <div class="filter-group">
                                     <label for="cuisine-select">Cuisine</label>
-                                    <select id="cuisine-select" name="cuisine">
+                                    <select id="cuisine-select">
                                         <option value="">Any</option>
                                         <option value="italian">Italian</option>
                                         <option value="mexican">Mexican</option>
@@ -78,7 +73,7 @@
                                 </div>
                                 <div class="filter-group">
                                     <label for="max-time">Max Cook Time (min)</label>
-                                    <input type="number" id="max-time" name="maxReadyTime" placeholder="e.g., 30">
+                                    <input type="number" id="max-time" placeholder="e.g., 30">
                                 </div>
                             </div>
                         </details>
@@ -96,7 +91,6 @@
         <!-- Recipe Detail View -->
         <section id="recipe-view" class="view">
             <div class="container">
-                <button id="back-btn" class="btn btn-secondary">← Back</button>
                 <div id="recipe-detail-content"></div>
             </div>
         </section>
@@ -131,20 +125,6 @@
                     </form>
                 </div>
 
-                <div class="product-search-section">
-                    <h2>Look Up Product Nutrition</h2>
-                    <form id="product-search-form" class="search-form">
-                        <input 
-                            type="text" 
-                            id="product-search-input" 
-                            placeholder="Search for a product..."
-                            aria-label="Product search"
-                        >
-                        <button type="submit" class="btn btn-primary">Search</button>
-                    </form>
-                    <div id="product-results"></div>
-                </div>
-
                 <div id="grocery-list-content"></div>
             </div>
         </section>
@@ -162,8 +142,8 @@
         <div class="footer-container">
             <p>&copy; 2026 Meal Planner & Grocery Helper</p>
             <p class="attribution">
-                Recipe data powered by <a href="https://spoonacular.com/food-api" target="_blank" rel="noopener">Spoonacular API</a> | 
-                Product nutrition from <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener">Open Food Facts</a>
+                Recipe data powered by <a href="https://spoonacular.com/food-api" target="_blank">Spoonacular API</a> | 
+                Product nutrition from <a href="https://world.openfoodfacts.org" target="_blank">Open Food Facts</a>
             </p>
         </div>
     </footer>
