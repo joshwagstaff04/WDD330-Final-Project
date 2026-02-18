@@ -2,7 +2,9 @@
 // handles API calls and localStorage for the meal planner app
 // keeping data separate from the UI code 
 
-import config from './config.js';
+// spoonacular API stuff
+const API_KEY = '0788a5b1ff7f452687e8b6ff3815f495';
+const BASE_URL = 'https://api.spoonacular.com';
 
 // need to track last API call time bc spoonacular rate limits at 1 req/sec
 let lastApiCall = 0;
@@ -17,7 +19,7 @@ async function searchRecipes(query, filters = {}) {
   lastApiCall = Date.now();
 
   // build the url manually, easier to read imo
-  let url = `${config.baseUrl}/recipes/complexSearch?apiKey=${config.apiKey}&query=${query}&number=12&addRecipeInformation=true`;
+  let url = `${BASE_URL}/recipes/complexSearch?apiKey=${API_KEY}&query=${query}&number=12&addRecipeInformation=true`;
 
   // add filters if they were set
   if (filters.diet) url += `&diet=${filters.diet}`;
@@ -39,7 +41,7 @@ async function getRecipeDetails(recipeId) {
   }
   lastApiCall = Date.now();
 
-  const url = `${config.baseUrl}/recipes/${recipeId}/information?apiKey=${config.apiKey}&includeNutrition=true`;
+  const url = `${BASE_URL}/recipes/${recipeId}/information?apiKey=${API_KEY}&includeNutrition=true`;
 
   console.log('fetching recipe:', recipeId); // TODO: remove this later
 
@@ -58,7 +60,7 @@ async function getRandomRecipes(count = 3) {
   }
   lastApiCall = Date.now();
 
-  const url = `${config.baseUrl}/recipes/random?apiKey=${config.apiKey}&number=${count}`;
+  const url = `${BASE_URL}/recipes/random?apiKey=${API_KEY}&number=${count}`;
 
   const response = await fetch(url);
   if (!response.ok) throw new Error('random recipes failed');
