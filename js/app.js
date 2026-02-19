@@ -1,8 +1,3 @@
-// app.js
-// UI logic and DOM rendering -- anything that touches the DOM lives here
-// data.js handles all API calls and localStorage
-//
-// organized as: nav/views, recipes, meal planner, grocery list
 
 import * as data from './data.js';
 
