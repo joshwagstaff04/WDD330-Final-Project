@@ -1,11 +1,15 @@
 // app.js
-// this is the main file -- handles all the UI stuff and connects to data.js
-// basically everything that touches the DOM lives here
+// UI logic and DOM rendering -- anything that touches the DOM lives here
+// data.js handles all API calls and localStorage
+//
+// organized as: nav/views, recipes, meal planner, grocery list
 
 import * as data from './data.js';
 
 // keeping track of which page we're on
 let currentView = 'home';
+// holds the recipe currently open in the detail view
+let currentRecipe = null;
 
 document.addEventListener('DOMContentLoaded', init);
 
@@ -28,8 +32,8 @@ function setupNavigation() {
   });
 }
 
-// show a specific view and hide the rest
-// also loads the data for that page if needed
+// switching views is just toggling .active on the right section
+// some views also reload their data when you open them
 function showView(viewName) {
   // hide all views first
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -93,26 +97,48 @@ async function loadFeaturedRecipes() {
   const featuredDiv = document.getElementById('featured-recipes');
   featuredDiv.innerHTML = '<div class="loading">Loading...</div>';
 
-  // not wrapping this in try/catch for now, if it fails the loading div just stays
-  const results = await data.getRandomRecipes(6);
-  // random endpoint returns results.recipes not results.results -- kept mixing these up
-  if (!results) return;
-  displayRecipes(results.recipes, featuredDiv);
+  try {
+    const results = await data.getRandomRecipes(6);
+    // random endpoint returns results.recipes not results.results
+    displayRecipes(results.recipes, featuredDiv);
+  } catch (err) {
+    featuredDiv.innerHTML = `
+      <div class="error">
+        <p>Could not load featured recipes.</p>
+        <button class="btn btn-secondary" onclick="loadFeaturedRecipes()">Retry</button>
+      </div>
+    `;
+  }
+}
+
+// spoonacular summary comes with HTML tags, so strip it to plain text
+function stripHtml(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || '';
 }
 
 // builds recipe cards and puts them in whatever container we pass in
-// used for both search results and featured section on homepage
+// used for both search results and the featured section
 function displayRecipes(recipeList, container) {
   if (!recipeList || recipeList.length === 0) {
     container.innerHTML = '<p>No recipes found</p>';
     return;
   }
 
+  // build a set of saved IDs once instead of hitting localStorage for every card
+  const savedIds = new Set();
+  const savedRecipes = data.getSavedRecipes();
+  for (let i = 0; i < savedRecipes.length; i++) {
+    savedIds.add(savedRecipes[i].id);
+  }
+
+  // build the HTML as a string and dump it into the container once at the end
   let html = '';
 
   for (let i = 0; i < recipeList.length; i++) {
     const recipe = recipeList[i];
-    const isSaved = data.isRecipeSaved(recipe.id);
+    const isSaved = savedIds.has(recipe.id);
 
     html += `
       <div class="recipe-card">
@@ -137,28 +163,32 @@ function displayRecipes(recipeList, container) {
   container.innerHTML = html;
 }
 
-// when user clicks View on a recipe card, show the full detail page
+// when user clicks View on a recipe card this will show the full detail page
 window.viewRecipe = async function(recipeId) {
   const detailView = document.getElementById('recipe-view');
   const content = document.getElementById('recipe-detail-content');
 
-  // hide all views and show the detail one
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   detailView.classList.add('active');
 
   content.innerHTML = '<div class="loading">Loading recipe...</div>';
 
   try {
-    const recipeData = await data.getRecipeDetails(recipeId);
+    // try saved recipes first ()already has full data), otherwise fetch from API
+    const saved = data.getSavedRecipes();
+    const fromSaved = saved.find(r => r.id === recipeId);
+    const recipeData = fromSaved || await data.getRecipeDetails(recipeId);
     displayRecipeDetail(recipeData, content);
   } catch (err) {
     content.innerHTML = '<div class="error">Failed to load recipe</div>';
   }
 };
 
-// builds the full recipe detail page -- ingredients, steps, nutrition
-// this function is doing a lot but I didn't want to split it up yet
+// builds the recipe detail page (ingredients, steps, nutrition)
 function displayRecipeDetail(recipe, container) {
+  // keep this around so the Save button can use the full object without refetching
+  currentRecipe = recipe;
+  window.currentRecipe = recipe;
   const isSaved = data.isRecipeSaved(recipe.id);
 
   // build ingredients list
@@ -209,12 +239,12 @@ function displayRecipeDetail(recipe, container) {
       </div>
       
       <div class="recipe-detail-actions">
-        <button class="btn btn-primary" onclick="toggleSaveRecipe(${recipe.id}, this)">
+        <button class="btn btn-primary" onclick="toggleSaveRecipe(${recipe.id}, this, currentRecipe)">
           ${isSaved ? '❤️ Saved' : '🤍 Save Recipe'}
         </button>
       </div>
       
-      ${recipe.summary ? `<div class="recipe-summary">${recipe.summary}</div>` : ''}
+      ${recipe.summary ? `<div class="recipe-summary">${stripHtml(recipe.summary)}</div>` : ''}
       
       <div class="recipe-ingredients">
         <h2>Ingredients</h2>
@@ -239,17 +269,18 @@ function displayRecipeDetail(recipe, container) {
 }
 
 // handles both saving and unsaving -- toggles based on current state
-window.toggleSaveRecipe = async function(recipeId, button) {
+// recipeData is passed in from the card/detail context so we never need an extra fetch
+window.toggleSaveRecipe = async function(recipeId, button, recipeData = null) {
   const alreadySaved = data.isRecipeSaved(recipeId);
 
   if (alreadySaved) {
     data.removeRecipe(recipeId);
     button.textContent = '🤍 Save';
   } else {
-    // need to fetch the full recipe before we can save it
     try {
-      const recipeData = await data.getRecipeDetails(recipeId);
-      data.saveRecipe(recipeData);
+      // use passed-in data if available, otherwise fetch (e.g. called from search card)
+      const fullData = recipeData || await data.getRecipeDetails(recipeId);
+      data.saveRecipe(fullData);
       button.textContent = '❤️ Saved';
     } catch (err) {
       alert('Could not save recipe, try again');
@@ -303,22 +334,22 @@ window.removeAndRefresh = function(recipeId) {
 // ------ MEAL PLANNER ------
 
 function loadMealPlanner() {
-  const weekId = data.getCurrentWeekId();
-  const plan = data.getMealPlanForWeek(weekId);
+  const monthId = data.getCurrentMonthId();
+  const plan = data.getMealPlanForWeek(monthId);
 
-  displayMealPlanner(plan, weekId);
+  displayMealPlanner(plan, monthId);
 
-  document.getElementById('generate-grocery-btn').onclick = () => generateGroceryFromMealPlan(weekId);
+  document.getElementById('generate-grocery-btn').onclick = () => generateGroceryFromMealPlan(monthId);
 
   document.getElementById('clear-plan-btn').onclick = () => {
     if (confirm('Clear all meals for this week?')) {
-      data.clearMealPlan(weekId);
+      data.clearMealPlan(monthId);
       loadMealPlanner();
     }
   };
 }
 
-function displayMealPlanner(plan, weekId) {
+function displayMealPlanner(plan, monthId) {
   const grid = document.getElementById('meal-planner-grid');
   const days = Object.keys(plan.meals);
   const mealTypes = ['breakfast', 'lunch', 'dinner'];
@@ -346,12 +377,11 @@ function displayMealPlanner(plan, weekId) {
             ${recipe ? `
               <div class="meal-recipe">
                 <strong>${recipe.title}</strong>
-                <small>${meal.servings} servings</small>
               </div>
             ` : '<small>recipe not found</small>'}
             <div class="meal-actions">
-              <button class="btn-small" onclick="removeMealFromPlanner('${weekId}', '${day}', '${mealType}')">Remove</button>
-              <button class="btn-small" onclick="openRecipeSelector('${weekId}', '${day}', '${mealType}')">Change</button>
+              <button class="btn-small" onclick="removeMealFromPlanner('${monthId}', '${day}', '${mealType}')">Remove</button>
+              <button class="btn-small" onclick="openRecipeSelector('${monthId}', '${day}', '${mealType}')">Change</button>
             </div>
           </div>
         `;
@@ -359,7 +389,7 @@ function displayMealPlanner(plan, weekId) {
         mealsHtml += `
           <div class="meal-slot empty">
             <div class="meal-type">${label}</div>
-            <button class="btn-small" onclick="openRecipeSelector('${weekId}', '${day}', '${mealType}')">+ Add Recipe</button>
+            <button class="btn-small" onclick="openRecipeSelector('${monthId}', '${day}', '${mealType}')">+ Add Recipe</button>
           </div>
         `;
       }
@@ -376,199 +406,281 @@ function displayMealPlanner(plan, weekId) {
   grid.innerHTML = html;
 }
 
-window.removeMealFromPlanner = function(weekId, day, mealType) {
-  data.removeMealFromDay(weekId, day, mealType);
+window.removeMealFromPlanner = function(monthId, day, mealType) {
+  data.removeMealFromDay(monthId, day, mealType);
   loadMealPlanner();
 };
 
-window.openRecipeSelector = function(weekId, day, mealType) {
-  // show a dialog to pick a recipe
+window.openRecipeSelector = function(monthId, day, mealType) {
   const saved = data.getSavedRecipes();
-  
+
   if (saved.length === 0) {
-    alert('You need to save some recipes first! Go to Home and search for recipes to save.');
+    alert('Save some recipes first! Search for recipes on the Home page.');
     return;
   }
-  
-  // this is a quick approach - just build a simple modal from a prompt for now
-  // a real modal would be nicer but this works for a student project
-  const recipeList = saved
-    .map((r, idx) => `${idx + 1}. ${r.title}`)
-    .join('\n');
-  
-  const choice = prompt(`Select a recipe:\n\n${recipeList}\n\nEnter the recipe number (or cancel to skip):`);
-  
-  if (choice) {
-    const idx = parseInt(choice) - 1;
-    if (idx >= 0 && idx < saved.length) {
-      const recipe = saved[idx];
-      data.addMealToDay(weekId, day, mealType, recipe.id, 4);
-      loadMealPlanner();
-    } else {
-      alert('Invalid selection');
-    }
+
+  // build modal overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+
+  let recipesHtml = '';
+  for (let i = 0; i < saved.length; i++) {
+    const r = saved[i];
+    recipesHtml += `
+      <div class="recipe-option" data-idx="${i}">
+        ${r.image ? `<img src="${r.image}" alt="${r.title}">` : ''}
+        <span class="recipe-option-title">${r.title}</span>
+      </div>
+    `;
   }
+
+  overlay.innerHTML = `
+    <div class="modal">
+      <h2>Add to ${day} – ${mealType[0].toUpperCase() + mealType.slice(1)}</h2>
+      <div id="recipe-option-list">${recipesHtml}</div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  // close on cancel or backdrop click
+  overlay.querySelector('#modal-cancel-btn').onclick = () => overlay.remove();
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+  // select a recipe
+  overlay.querySelectorAll('.recipe-option').forEach(el => {
+    el.addEventListener('click', () => {
+      const recipe = saved[parseInt(el.dataset.idx)];
+      data.addMealToDay(monthId, day, mealType, recipe.id);
+      overlay.remove();
+      loadMealPlanner();
+    });
+  });
 };
 
-// TODO: this should actually pull ingredients from each recipe
-// right now it just creates an empty list 
-function generateGroceryFromMealPlan(weekId) {
-  const plan = data.getMealPlanForWeek(weekId);
+// Fetches ingredients from every recipe in the meal plan,
+// merges duplicate ingredients (same name + unit), then builds a grocery list
+async function generateGroceryFromMealPlan(monthId) {
+  const plan = data.getMealPlanForWeek(monthId);
 
-  // check if there's actually anything planned
-  let hasMeals = false;
-  const days = Object.values(plan.meals);
+  // collect unique recipe IDs (same recipe might be used multiple days)
+  const recipeIds = new Set();
+  const days = Object.keys(plan.meals);
   for (let i = 0; i < days.length; i++) {
-    const meals = Object.values(days[i]);
-    for (let j = 0; j < meals.length; j++) {
-      if (meals[j] && meals[j].recipeId) {
-        hasMeals = true;
-      }
+    const dayMeals = plan.meals[days[i]];
+    const mealTypes = Object.keys(dayMeals);
+    for (let j = 0; j < mealTypes.length; j++) {
+      const meal = dayMeals[mealTypes[j]];
+      if (meal && meal.recipeId) recipeIds.add(meal.recipeId);
     }
   }
 
-  if (!hasMeals) {
+  if (recipeIds.size === 0) {
     alert('Add some meals to your plan first!');
     return;
   }
 
-  const listId = data.createGroceryList('Weekly Grocery List', weekId);
-  data.addGroceryItem(listId, 'List created from meal plan -- add your items below', 1, 'count', 'Note');
+  const btn = document.getElementById('generate-grocery-btn');
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
 
-  showView('grocery');
+  try {
+    // use saved recipe data first -- if already saved we have extendedIngredients, no fetch needed
+    const recipeIdList = Array.from(recipeIds);
+    const alreadySaved = data.getSavedRecipes();
+    const recipeDetails = [];
+    for (let i = 0; i < recipeIdList.length; i++) {
+      let found = null;
+      for (let j = 0; j < alreadySaved.length; j++) {
+        if (alreadySaved[j].id === recipeIdList[i] && alreadySaved[j].extendedIngredients) {
+          found = alreadySaved[j];
+          break;
+        }
+      }
+      if (found) {
+        recipeDetails.push(found);
+      } else {
+        const details = await data.getRecipeDetails(recipeIdList[i]);
+        recipeDetails.push(details);
+      }
+    }
+
+    // build a map to merge duplicate ingredients
+    const merged = {};
+
+    for (let i = 0; i < recipeDetails.length; i++) {
+      const recipe = recipeDetails[i];
+      if (!recipe.extendedIngredients) continue;
+      for (let j = 0; j < recipe.extendedIngredients.length; j++) {
+        const ing = recipe.extendedIngredients[j];
+        const name = ing.name.trim().toLowerCase();
+
+        // safely get unit — measures.us may not always exist
+        let unit = '';
+        if (ing.measures && ing.measures.us && ing.measures.us.unitShort) {
+          unit = ing.measures.us.unitShort.toLowerCase();
+        } else if (ing.unit) {
+          unit = ing.unit.toLowerCase();
+        }
+
+        // safely get amount
+        let amount = 1;
+        if (ing.measures && ing.measures.us && ing.measures.us.amount) {
+          amount = ing.measures.us.amount;
+        } else if (ing.amount) {
+          amount = ing.amount;
+        }
+
+        // merge duplicates -- key is name + unit so e.g. two entries for butter_tbsp get combined
+        const key = name + '_' + unit;
+        if (merged[key]) {
+          merged[key].amount += amount;
+        } else {
+          merged[key] = { name: name, amount: amount, unit: unit };
+        }
+      }
+    }
+
+    // clear existing items and rebuild fresh
+    data.clearGroceryItems();
+
+    const mergedKeys = Object.keys(merged);
+    for (let i = 0; i < mergedKeys.length; i++) {
+      const item = merged[mergedKeys[i]];
+      data.addGroceryItem(item.name, item.amount, item.unit);
+    }
+
+    showView('grocery');
+    btn.textContent = 'Generate Grocery List';
+    btn.disabled = false;
+  } catch (err) {
+    console.error('grocery generation failed:', err);
+    alert('Could not generate list — check your connection and try again.');
+    btn.textContent = 'Generate Grocery List';
+    btn.disabled = false;
+  }
 }
 
 // ------ GROCERY LIST ------
 
 function loadGroceryList() {
-  const allLists = data.getGroceryLists();
-  const listKeys = Object.keys(allLists);
-
-  if (listKeys.length === 0) {
-    document.getElementById('grocery-list-content').innerHTML = `
-      <div class="empty-state">
-        <p>No grocery lists yet</p>
-        <p>Add items below or generate one from your meal plan</p>
-      </div>
-    `;
-    setupGroceryListForm();
-    return;
-  }
-
-  // just show the most recent list for now
-  // TODO: let user switch between lists
-  const listId = listKeys[listKeys.length - 1];
-  const currentList = allLists[listId];
-
-  displayGroceryList(currentList);
+  displayGroceryList();
   setupGroceryListForm();
 
   document.getElementById('clear-grocery-btn').onclick = () => {
-    if (confirm('Delete this grocery list?')) {
-      data.clearGroceryList(listId);
-      loadGroceryList();
+    if (confirm('Clear grocery list?')) {
+      data.clearGroceryItems();
+      displayGroceryList();
     }
   };
 
   document.getElementById('uncheck-all-btn').onclick = () => {
-    // uncheck everything so you can reuse the list
-    currentList.items.forEach(item => item.checked = false);
-    displayGroceryList(currentList);
+    const items = data.getGroceryItems();
+    for (let i = 0; i < items.length; i++) {
+      items[i].checked = false;
+    }
+    data.saveGroceryItems(items);
+    displayGroceryList();
   };
 }
 
-function displayGroceryList(list) {
+function displayGroceryList() {
   const container = document.getElementById('grocery-list-content');
-  
-  if (list.items.length === 0) {
-    container.innerHTML = '<p>No items in this list yet</p>';
+  const items = data.getGroceryItems();
+
+  if (items.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>No items yet.</p><p>Add some below or generate from your meal plan.</p></div>';
     return;
   }
-  
-  // group items by category
-  const byCategory = {};
-  for (let i = 0; i < list.items.length; i++) {
-    const item = list.items[i];
-    if (!byCategory[item.category]) {
-      byCategory[item.category] = [];
-    }
-    byCategory[item.category].push(item);
-  }
 
-  // build HTML for each category group
   let html = '';
-  for (const category in byCategory) {
-    const items = byCategory[category];
-    let itemsHtml = '';
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      itemsHtml += `
-        <div class="grocery-item ${item.checked ? 'checked' : ''}">
-          <input 
-            type="checkbox" 
-            ${item.checked ? 'checked' : ''} 
-            onchange="toggleGroceryItem('${list.id}', '${item.id}')"
-          >
-          <span class="item-name">${item.name}</span>
-          <span class="item-qty">${item.quantity} ${item.unit}</span>
-          ${item.notes ? `<span class="item-notes">${item.notes}</span>` : ''}
-          <button class="btn-small" onclick="removeGroceryItemFromList('${list.id}', '${item.id}')">✕</button>
-        </div>
-      `;
-    }
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    const amt = item.amount ? (Math.round(item.amount * 10) / 10) : null;
+    const unit = item.unit ? item.unit : '';
+    const label = amt ? `${amt}${unit ? ' ' + unit : ''} ${item.name}` : item.name;
     html += `
-      <div class="category-section">
-        <h3>${category}</h3>
-        <div class="items-list">${itemsHtml}</div>
+      <div class="grocery-item ${item.checked ? 'checked' : ''}">
+        <input
+          type="checkbox"
+          ${item.checked ? 'checked' : ''}
+          onchange="toggleGroceryItem('${item.id}')"
+        >
+        <span class="item-name">${label}</span>
+        <button class="btn-small" onclick="lookupFood('${item.id}', '${item.name}')">Look up</button>
+        <button class="btn-small" onclick="removeGroceryItemFromList('${item.id}')">✕</button>
       </div>
+      <div class="food-lookup hidden" id="lookup-${item.id}"></div>
     `;
   }
 
   container.innerHTML = html;
 }
 
-window.toggleGroceryItem = function(listId, itemId) {
-  data.toggleGroceryItem(listId, itemId);
-  const list = data.getGroceryList(listId);
-  displayGroceryList(list);
+window.toggleGroceryItem = function(itemId) {
+  data.toggleGroceryItem(itemId);
+  displayGroceryList();
 };
 
-window.removeGroceryItemFromList = function(listId, itemId) {
-  data.removeGroceryItem(listId, itemId);
-  const list = data.getGroceryList(listId);
-  displayGroceryList(list);
+window.removeGroceryItemFromList = function(itemId) {
+  data.removeGroceryItem(itemId);
+  displayGroceryList();
 };
 
-// sets up the add item form -- creates a new list if there isn't one yet
+// "Look up" toggles a small info panel under the grocery item
+// pulls basic nutrition info from Open Food Facts (no API key needed)
+window.lookupFood = async function(itemId, itemName) {
+  const panel = document.getElementById('lookup-' + itemId);
+
+  // toggle if already loaded
+  if (!panel.classList.contains('hidden')) {
+    panel.classList.add('hidden');
+    return;
+  }
+
+  panel.classList.remove('hidden');
+  panel.innerHTML = '<em>Looking up...</em>';
+
+  try {
+    const results = await data.searchFood(itemName);
+
+    if (!results.products || results.products.length === 0) {
+      panel.innerHTML = '<em>No products found.</em>';
+      return;
+    }
+
+    const p = results.products[0];
+    const name = p.product_name || itemName;
+    const kcal = p.nutriments && p.nutriments['energy-kcal_100g']
+      ? Math.round(p.nutriments['energy-kcal_100g']) + ' kcal / 100g'
+      : null;
+    const grade = p.nutrition_grade_fr ? p.nutrition_grade_fr.toUpperCase() : null;
+
+    let html = '<strong>' + name + '</strong>';
+    if (kcal) html += ' &nbsp;·&nbsp; Calories: ' + kcal;
+    if (grade) html += ' &nbsp;·&nbsp; Grade: ' + grade;
+    panel.innerHTML = html;
+  } catch (err) {
+    panel.innerHTML = '<em>Lookup failed — check your connection.</em>';
+  }
+};
+
 function setupGroceryListForm() {
   const form = document.getElementById('add-grocery-form');
 
-  // get existing list or make a new one
-  const allLists = data.getGroceryLists();
-  const listKeys = Object.keys(allLists);
-  let listId;
-  if (listKeys.length > 0) {
-    listId = listKeys[listKeys.length - 1];
-  } else {
-    listId = data.createGroceryList('Shopping List');
-  }
-
   form.onsubmit = (e) => {
     e.preventDefault();
-
     const itemName = document.getElementById('grocery-item-input').value.trim();
-    const aisle = document.getElementById('grocery-aisle-input').value.trim();
-
     if (!itemName) return;
-
-    data.addGroceryItem(listId, itemName, 1, 'count', aisle || 'Other');
+    data.addGroceryItem(itemName);
     form.reset();
-
-    // re-render the list with the new item
-    const updatedList = data.getGroceryList(listId);
-    displayGroceryList(updatedList);
+    displayGroceryList();
   };
 }
 
 // need these on window so the onclick attributes in the HTML can reach them
 window.showView = showView;
+window.loadFeaturedRecipes = loadFeaturedRecipes;

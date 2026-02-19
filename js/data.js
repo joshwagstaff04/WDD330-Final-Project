@@ -1,76 +1,42 @@
 // data.js
 // handles API calls and localStorage for the meal planner app
-// keeping data separate from the UI code 
+// keeping data separate from the UI code
 
-// spoonacular API stuff
-const API_KEY = '0788a5b1ff7f452687e8b6ff3815f495';
+const API_KEY = '8c9def4a1e0c4c9290dfddce9f47b0ea';
 const BASE_URL = 'https://api.spoonacular.com';
 
-// need to track last API call time bc spoonacular rate limits at 1 req/sec
-let lastApiCall = 0;
+// API
 
-// search recipes -- main search on the home page
+// search recipes main search on the home page
 async function searchRecipes(query, filters = {}) {
-  // wait if we called the API too recently
-  const now = Date.now();
-  if (now - lastApiCall < 1000) {
-    await new Promise(resolve => setTimeout(resolve, 1000 - (now - lastApiCall)));
-  }
-  lastApiCall = Date.now();
+  let url = `${BASE_URL}/recipes/complexSearch?apiKey=${API_KEY}&query=${encodeURIComponent(query)}&number=12&addRecipeInformation=true`;
 
-  // build the url manually, easier to read imo
-  let url = `${BASE_URL}/recipes/complexSearch?apiKey=${API_KEY}&query=${query}&number=12&addRecipeInformation=true`;
-
-  // add filters if they were set
   if (filters.diet) url += `&diet=${filters.diet}`;
   if (filters.cuisine) url += `&cuisine=${filters.cuisine}`;
   if (filters.maxReadyTime) url += `&maxReadyTime=${filters.maxReadyTime}`;
 
   const response = await fetch(url);
-  if (!response.ok) throw new Error('search failed');
-
-  const recipeData = await response.json();
-  return recipeData;
+  if (!response.ok) throw new Error('Search failed');
+  return response.json();
 }
 
-// get all the info for one recipe  ingredients, steps, nutrition etc
+// get all the info for one recipe ingredients, steps, nutrition etc
 async function getRecipeDetails(recipeId) {
-  const now = Date.now();
-  if (now - lastApiCall < 1000) {
-    await new Promise(resolve => setTimeout(resolve, 1000 - (now - lastApiCall)));
-  }
-  lastApiCall = Date.now();
-
   const url = `${BASE_URL}/recipes/${recipeId}/information?apiKey=${API_KEY}&includeNutrition=true`;
-
-  console.log('fetching recipe:', recipeId); // TODO: remove this later
-
   const response = await fetch(url);
-  if (!response.ok) throw new Error('could not get recipe details');
-
-  const recipeData = await response.json();
-  return recipeData;
+  if (!response.ok) throw new Error('Could not get recipe details');
+  return response.json();
 }
 
-// random recipes for the featured section on homepage
-async function getRandomRecipes(count = 3) {
-  const now = Date.now();
-  if (now - lastApiCall < 1000) {
-    await new Promise(resolve => setTimeout(resolve, 1000 - (now - lastApiCall)));
-  }
-  lastApiCall = Date.now();
-
+// random recipes for the featured section on the homepage
+async function getRandomRecipes(count = 6) {
   const url = `${BASE_URL}/recipes/random?apiKey=${API_KEY}&number=${count}`;
-
   const response = await fetch(url);
-  if (!response.ok) throw new Error('random recipes failed');
-
-  const data = await response.json();
-  return data;
+  return response.json();
 }
 
 
-// ---- SAVED RECIPES ----
+// saved recipes
 
 function getSavedRecipes() {
   const saved = localStorage.getItem('savedRecipes');
@@ -78,28 +44,18 @@ function getSavedRecipes() {
   return JSON.parse(saved);
 }
 
-// saves a recipe -- also handles not saving duplicates
-// this function does a little more than it probably should but whatever, it works
+// saves a recipe, skips duplicates
 function saveRecipe(recipe) {
   const savedRecipes = getSavedRecipes();
 
   // check if we already have it
   const alreadyThere = savedRecipes.find(r => r.id === recipe.id);
   if (alreadyThere) {
-    console.log('already saved');
     return false;
   }
 
-  // the API returns a huge object, only grab what we actually need
-  const recipeToSave = {
-    id: recipe.id,
-    title: recipe.title,
-    image: recipe.image,
-    readyInMinutes: recipe.readyInMinutes,
-    servings: recipe.servings
-  };
-
-  savedRecipes.push(recipeToSave);
+  // store the full object so detail pages never need to re-fetch
+  savedRecipes.push(recipe);
   localStorage.setItem('savedRecipes', JSON.stringify(savedRecipes));
   return true;
 }
@@ -107,7 +63,6 @@ function saveRecipe(recipe) {
 function removeRecipe(recipeId) {
   const savedRecipes = getSavedRecipes();
   const updated = [];
-  // could use filter() here but this is easier to read imo
   for (let i = 0; i < savedRecipes.length; i++) {
     if (savedRecipes[i].id !== recipeId) {
       updated.push(savedRecipes[i]);
@@ -122,12 +77,11 @@ function isRecipeSaved(recipeId) {
 }
 
 
-// ---- MEAL PLANS ----
-// stored as an object keyed by year-month like "2026-02"
+// meal plans
+// stored as an object keyed by year-month 
 // each month has 7 days, each day has breakfast/lunch/dinner slots
 
-// just use year + month as the key, dont need anything fancier than that
-function getCurrentWeekId() {
+function getCurrentMonthId() {
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -141,12 +95,12 @@ function getMealPlans() {
 }
 
 // gets the plan for a specific week, creates an empty one if it doesn't exist yet
-function getMealPlanForWeek(weekId) {
+function getMealPlanForWeek(monthId) {
   const allPlans = getMealPlans();
 
-  if (!allPlans[weekId]) {
-    allPlans[weekId] = {
-      weekId: weekId,
+  if (!allPlans[monthId]) {
+    allPlans[monthId] = {
+      monthId,
       meals: {
         Monday: { breakfast: null, lunch: null, dinner: null },
         Tuesday: { breakfast: null, lunch: null, dinner: null },
@@ -160,117 +114,83 @@ function getMealPlanForWeek(weekId) {
     localStorage.setItem('mealPlans', JSON.stringify(allPlans));
   }
 
-  return allPlans[weekId];
+  return allPlans[monthId];
 }
 
-function saveMealPlanWeek(weekId, plan) {
+function saveMealPlanWeek(monthId, plan) {
   const allPlans = getMealPlans();
-  allPlans[weekId] = plan;
+  allPlans[monthId] = plan;
   localStorage.setItem('mealPlans', JSON.stringify(allPlans));
 }
 
-function addMealToDay(weekId, day, mealType, recipeId, servings) {
-  const plan = getMealPlanForWeek(weekId);
+function addMealToDay(monthId, day, mealType, recipeId) {
+  const plan = getMealPlanForWeek(monthId);
 
   plan.meals[day][mealType] = {
     recipeId: recipeId,
-    servings: servings || 4
+    servings: 4
   };
 
-  saveMealPlanWeek(weekId, plan);
+  saveMealPlanWeek(monthId, plan);
 }
 
-function removeMealFromDay(weekId, day, mealType) {
-  const plan = getMealPlanForWeek(weekId);
+function removeMealFromDay(monthId, day, mealType) {
+  const plan = getMealPlanForWeek(monthId);
   plan.meals[day][mealType] = null;
-  saveMealPlanWeek(weekId, plan);
+  saveMealPlanWeek(monthId, plan);
 }
 
-function clearMealPlan(weekId) {
+function clearMealPlan(monthId) {
   const allPlans = getMealPlans();
-  delete allPlans[weekId];
+  delete allPlans[monthId];
   localStorage.setItem('mealPlans', JSON.stringify(allPlans));
 }
 
 
-// ---- GROCERY LISTS ----
+// grocery list
 
-function getGroceryLists() {
-  const lists = localStorage.getItem('groceryLists');
-  if (!lists) return {};
-  return JSON.parse(lists);
+function getGroceryItems() {
+  const items = localStorage.getItem('groceryItems');
+  if (!items) return [];
+  return JSON.parse(items);
 }
 
-function createGroceryList(name, weekId = null) {
-  const allLists = getGroceryLists();
-  const listId = `list-${Date.now()}`;
-
-  allLists[listId] = {
-    id: listId,
-    name: name,
-    weekId: weekId,
-    items: []
-  };
-
-  localStorage.setItem('groceryLists', JSON.stringify(allLists));
-  return listId;
+function saveGroceryItems(items) {
+  localStorage.setItem('groceryItems', JSON.stringify(items));
 }
 
-function getGroceryList(listId) {
-  const allLists = getGroceryLists();
-  return allLists[listId] || null;
+function addGroceryItem(name, amount, unit) {
+  const items = getGroceryItems();
+  const id = 'item-' + Date.now() + '-' + Math.floor(Math.random() * 100000);
+  items.push({ id: id, name: name, amount: amount || null, unit: unit || '', checked: false });
+  saveGroceryItems(items);
+  return id;
 }
 
-// adds item + saves back to localStorage
-// TODO: maybe split this into addItem and saveList at some point
-function addGroceryItem(listId, itemName, quantity = 1, unit = 'count', category = 'Other', notes = '') {
-  const allLists = getGroceryLists();
-  const list = allLists[listId];
-
-  if (!list) return false;
-
-  // had to look up how to make a unique id without a library -- Date.now() works fine for this
-  const itemId = `item-${Date.now()}`;
-
-  list.items.push({
-    id: itemId,
-    name: itemName,
-    quantity: quantity,
-    unit: unit,
-    category: category,
-    checked: false,
-    notes: notes
-  });
-
-  localStorage.setItem('groceryLists', JSON.stringify(allLists));
-  return itemId;
-}
-
-function toggleGroceryItem(listId, itemId) {
-  const allLists = getGroceryLists();
-  const list = allLists[listId];
-  if (!list) return;
-
-  const item = list.items.find(i => i.id === itemId);
+function toggleGroceryItem(itemId) {
+  const items = getGroceryItems();
+  const item = items.find(i => i.id === itemId);
   if (item) {
     item.checked = !item.checked;
-    localStorage.setItem('groceryLists', JSON.stringify(allLists));
+    saveGroceryItems(items);
   }
 }
 
-function removeGroceryItem(listId, itemId) {
-  const allLists = getGroceryLists();
-  const list = allLists[listId];
-  if (!list) return;
-
-  list.items = list.items.filter(i => i.id !== itemId);
-  localStorage.setItem('groceryLists', JSON.stringify(allLists));
+function removeGroceryItem(itemId) {
+  const items = getGroceryItems().filter(i => i.id !== itemId);
+  saveGroceryItems(items);
 }
 
-function clearGroceryList(listId) {
-  const allLists = getGroceryLists();
-  delete allLists[listId];
-  localStorage.setItem('groceryLists', JSON.stringify(allLists));
+function clearGroceryItems() {
+  localStorage.removeItem('groceryItems');
+}
+
+// Open Food Facts, no API key needed
+async function searchFood(query) {
+  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&json=true&page_size=3&fields=product_name,nutriments,nutrition_grade_fr`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('Food lookup failed');
+  return response.json();
 }
 
 export {
@@ -281,16 +201,16 @@ export {
   saveRecipe,
   removeRecipe,
   isRecipeSaved,
-  getCurrentWeekId,
+  getCurrentMonthId,
   getMealPlanForWeek,
   addMealToDay,
   removeMealFromDay,
   clearMealPlan,
-  getGroceryLists,
-  createGroceryList,
-  getGroceryList,
+  getGroceryItems,
+  saveGroceryItems,
   addGroceryItem,
   toggleGroceryItem,
   removeGroceryItem,
-  clearGroceryList
+  clearGroceryItems,
+  searchFood
 };
