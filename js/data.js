@@ -2,7 +2,7 @@
 // handles API calls and localStorage for the meal planner app
 // keeping data separate from the UI code
 
-const API_KEY = '8c9def4a1e0c4c9290dfddce9f47b0ea';
+const API_KEY = '371a703dcddd47198cb6180b04fe5055';
 const BASE_URL = 'https://api.spoonacular.com';
 
 // API
